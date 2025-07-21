@@ -1,27 +1,41 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const { generateToken } = require('../utils/jwt');
-
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-// Registration
+// Secret key for JWT
+const JWT_SECRET = 'mysecretkey123';
+
+// Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword });
+
+    // Create new user
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword
+    });
+
     await user.save();
 
-    const token = generateToken(user._id);
-    res.status(201).json({ token, userId: user._id });
-  } catch (err) {
-    res.status(500).json({ message: 'Registration failed', error: err.message });
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(201).json({ token, user: { id: user._id, username, email } });
+  } catch (error) {
+    res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 });
 
@@ -29,61 +43,45 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = generateToken(user._id);
-    res.json({ token, userId: user._id });
-  } catch (err) {
-    res.status(500).json({ message: 'Login failed', error: err.message });
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ token, user: { id: user._id, username: user.username, email } });
+  } catch (error) {
+    res.status(500).json({ message: 'Login failed', error: error.message });
   }
 });
 
-// Password Reset Request (simplified, no email sending)
-router.post('/reset-password-request', async (req, res) => {
+// Password Reset (Simple implementation - in production, use email verification)
+router.post('/reset-password', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, newPassword } = req.body;
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const resetToken = Math.random().toString(36).slice(2);
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
-    await user.save();
-
-    res.json({ message: 'Reset token generated', resetToken });
-  } catch (err) {
-    res.status(500).json({ message: 'Reset request failed', error: err.message });
-  }
-});
-
-// Password Reset
-router.post('/reset-password', async (req, res) => {
-  try {
-    const { resetToken, newPassword } = req.body;
-    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired token' });
-    }
-
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    user.resetToken = null;
-    user.resetTokenExpiry = null;
     await user.save();
 
     res.json({ message: 'Password reset successful' });
-  } catch (err) {
-    res.status(500).json({ message: 'Password reset failed', error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: 'Password reset failed', error: error.message });
   }
 });
 
