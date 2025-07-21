@@ -1,23 +1,19 @@
 const express = require('express');
-const mongoose = require('mongoose');
-
-/**
- * Пример создания модели в базу данных
- */
-// 
-// const MongoTestSchema = new mongoose.Schema({
-//   value: { type: String, required: true },
-// });
-
-// const MongoModelTest = mongoose.model('Test', MongoTestSchema);
-
-// const newTest = new MongoModelTest({
-//   value: 'test-value',
-// });
-
-// newTest.save();
+const cors = require('cors');
+const authRoutes = require('./routes/auth');
+const photoRoutes = require('./routes/photos');
+const userRoutes = require('./routes/user');
 
 const router = express.Router();
+
+// Enable CORS
+router.use(cors());
+router.use(express.json());
+
+// Routes
+router.use('/auth', authRoutes);
+router.use('/photos', photoRoutes);
+router.use('/user', userRoutes);
 
 // GET /api/hello
 router.get('/hello', (req, res) => {
@@ -33,4 +29,3 @@ router.get('/status', (req, res) => {
 });
 
 module.exports = router;
-
