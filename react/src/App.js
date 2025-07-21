@@ -8,6 +8,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import PhotoGalleryPage from './pages/PhotoGalleryPage';
 import UploadPhotoPage from './pages/UploadPhotoPage';
 import UserProfilePage from './pages/UserProfilePage';
+import Layout from './components/Layout';
 
 function App() {
   return (
@@ -15,13 +16,41 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/gallery" element={<PhotoGalleryPage />} />
-            <Route path="/upload" element={<UploadPhotoPage />} />
-            <Route path="/profile" element={<UserProfilePage />} />
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={
+              <Layout>
+                <LoginPage />
+              </Layout>
+            } />
+            <Route path="/register" element={
+              <Layout>
+                <RegisterPage />
+              </Layout>
+            } />
+            <Route path="/reset-password" element={
+              <Layout>
+                <ResetPasswordPage />
+              </Layout>
+            } />
+            <Route path="/gallery" element={
+              <Layout>
+                <PhotoGalleryPage />
+              </Layout>
+            } />
+            <Route path="/upload" element={
+              <Layout>
+                <UploadPhotoPage />
+              </Layout>
+            } />
+            <Route path="/profile" element={
+              <Layout>
+                <UserProfilePage />
+              </Layout>
+            } />
+            <Route path="/" element={
+              <Layout>
+                <LoginPage />
+              </Layout>
+            } />
           </Routes>
         </div>
       </Router>

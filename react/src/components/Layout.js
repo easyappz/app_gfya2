@@ -1,90 +1,47 @@
 import React from 'react';
-import { Layout as AntLayout, Menu, Button } from 'antd';
+import { Layout as AntLayout, Menu } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HomeOutlined, UploadOutlined, StarOutlined, UserOutlined, BarChartOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useAuth } from '../contexts/AuthContext';
 
 const { Header, Content } = AntLayout;
 
 const Layout = ({ children }) => {
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const token = localStorage.getItem('token');
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     navigate('/login');
   };
 
-  const menuItems = token ? [
-    {
-      key: '/upload',
-      icon: <UploadOutlined />,
-      label: 'Загрузить фото',
-      onClick: () => navigate('/upload'),
-    },
-    {
-      key: '/rate',
-      icon: <StarOutlined />,
-      label: 'Оценить фото',
-      onClick: () => navigate('/rate'),
-    },
-    {
-      key: '/my-photos',
-      icon: <UserOutlined />,
-      label: 'Мои фото',
-      onClick: () => navigate('/my-photos'),
-    },
-    {
-      key: '/statistics',
-      icon: <BarChartOutlined />,
-      label: 'Статистика',
-      onClick: () => navigate('/statistics'),
-    },
-  ] : [
-    {
-      key: '/login',
-      icon: <HomeOutlined />,
-      label: 'Вход',
-      onClick: () => navigate('/login'),
-    },
-    {
-      key: '/register',
-      icon: <UserOutlined />,
-      label: 'Регистрация',
-      onClick: () => navigate('/register'),
-    },
-  ];
-
-  const isAuthPage = ['/login', '/register', '/reset-password'].includes(location.pathname);
+  const menuItems = currentUser
+    ? [
+        { key: '/gallery', label: 'Галерея', onClick: () => navigate('/gallery') },
+        { key: '/upload', label: 'Загрузить фото', onClick: () => navigate('/upload') },
+        { key: '/profile', label: 'Профиль', onClick: () => navigate('/profile') },
+        { key: 'logout', label: 'Выйти', onClick: handleLogout },
+      ]
+    : [
+        { key: '/login', label: 'Войти', onClick: () => navigate('/login') },
+        { key: '/register', label: 'Регистрация', onClick: () => navigate('/register') },
+      ];
 
   return (
     <AntLayout style={{ minHeight: '100vh' }}>
-      {!isAuthPage && (
-        <Header style={{ background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-          <div style={{ float: 'left', marginRight: 50 }}>
-            <h2 style={{ margin: 0, cursor: 'pointer' }} onClick={() => navigate(token ? '/upload' : '/login')}>
-              ФотоОценка
-            </h2>
-          </div>
-          <Menu
-            mode="horizontal"
-            items={menuItems}
-            selectedKeys={[location.pathname]}
-            style={{ lineHeight: '64px' }}
-          />
-          {token && (
-            <div style={{ float: 'right' }}>
-              <span style={{ marginRight: 16 }}>{user.username || 'Пользователь'}</span>
-              <Button type="primary" danger icon={<LogoutOutlined />} onClick={handleLogout}>
-                Выйти
-              </Button>
-            </div>
-          )}
-        </Header>
-      )}
-      <Content style={{ padding: isAuthPage ? 0 : '24px 50px', background: '#fff' }}>
+      <Header style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
+        <div className="logo" style={{ float: 'left', fontSize: '20px', fontWeight: 'bold' }}>
+          ФотоГалерея
+        </div>
+        <Menu
+          theme="light"
+          mode="horizontal"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          style={{ float: 'right' }}
+        />
+      </Header>
+      <Content style={{ padding: '24px', margin: '0 auto', maxWidth: '1200px' }}>
         {children}
       </Content>
     </AntLayout>

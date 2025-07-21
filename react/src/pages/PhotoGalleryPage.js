@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllPhotos, ratePhoto, filterPhotosByRating } from '../api/photoApi';
 import { useAuth } from '../contexts/AuthContext';
-import '../App.css';
+import { Card, Row, Col, Button, Select, Alert, Spin, Typography, Rate } from 'antd';
+import { StarOutlined } from '@ant-design/icons';
+
+const { Title } = Typography;
+const { Option } = Select;
 
 const PhotoGalleryPage = () => {
   const [photos, setPhotos] = useState([]);
   const [minRating, setMinRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,64 +55,56 @@ const PhotoGalleryPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
-    <div className="gallery-container">
-      <header>
-        <h2>Галерея фотографий</h2>
-        <div className="nav-links">
-          <a href="/upload">Загрузить фото</a>
-          <a href="/profile">Профиль</a>
-          <button onClick={handleLogout}>Выйти</button>
-        </div>
-      </header>
-      {error && <div className="error-message">{error}</div>}
-      <div className="filter-section">
-        <label>Минимальная оценка:</label>
-        <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}>
-          <option value={0}>Все</option>
-          <option value={1}>1+</option>
-          <option value={2}>2+</option>
-          <option value={3}>3+</option>
-          <option value={4}>4+</option>
-          <option value={5}>5</option>
-        </select>
+    <Card style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      <Title level={2} style={{ marginBottom: 24 }}>Галерея фотографий</Title>
+      {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center' }}>
+        <span style={{ marginRight: 8 }}>Минимальная оценка:</span>
+        <Select value={minRating} onChange={setMinRating} style={{ width: 120 }}>
+          <Option value={0}>Все</Option>
+          <Option value={1}>1+</Option>
+          <Option value={2}>2+</Option>
+          <Option value={3}>3+</Option>
+          <Option value={4}>4+</Option>
+          <Option value={5}>5</Option>
+        </Select>
       </div>
       {loading ? (
-        <div className="loading">Загрузка...</div>
+        <Spin size="large" style={{ display: 'block', margin: '40px auto' }} />
       ) : (
-        <div className="photo-grid">
+        <Row gutter={[16, 16]}>
           {photos.length === 0 ? (
-            <p>Фотографии не найдены.</p>
+            <Col span={24} style={{ textAlign: 'center' }}>
+              <p>Фотографии не найдены.</p>
+            </Col>
           ) : (
             photos.map((photo) => (
-              <div key={photo._id} className="photo-card">
-                <img src={`/uploads/${photo.filename}`} alt={photo.originalName} />
-                <div className="photo-info">
-                  <p>Загрузил: {photo.userId?.username || 'Неизвестно'}</p>
-                  <div className="rating">
-                    <span>Оценить:</span>
-                    {[1, 2, 3, 4, 5].map((rate) => (
-                      <button
-                        key={rate}
-                        onClick={() => handleRate(photo._id, rate)}
-                        className="rate-button"
-                      >
-                        {rate}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <Col key={photo._id} xs={24} sm={12} md={8} lg={6}>
+                <Card
+                  hoverable
+                  cover={<img alt={photo.originalName} src={`/uploads/${photo.filename}`} style={{ height: 200, objectFit: 'cover' }} />}
+                >
+                  <Card.Meta
+                    title={`Загрузил: ${photo.userId?.username || 'Неизвестно'}`}
+                    description={
+                      <div>
+                        <div style={{ marginBottom: 8 }}>Оценить:</div>
+                        <Rate
+                          value={photo.averageRating || 0}
+                          onChange={(value) => handleRate(photo._id, value)}
+                          allowHalf={false}
+                        />
+                      </div>
+                    }
+                  />
+                </Card>
+              </Col>
             ))
           )}
-        </div>
+        </Row>
       )}
-    </div>
+    </Card>
   );
 };
 

@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadPhoto } from '../api/photoApi';
 import { useAuth } from '../contexts/AuthContext';
-import '../App.css';
+import { Upload, Button, Alert, Card, Typography } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+
+const { Title } = Typography;
 
 const UploadPhotoPage = () => {
-  const [file, setFile] = useState(null);
+  const [fileList, setFileList] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -18,16 +21,14 @@ const UploadPhotoPage = () => {
     }
   }, [currentUser, navigate]);
 
-  const handleFileChange = (e) => {
-    if (e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
+  const handleFileChange = ({ fileList }) => {
+    setFileList(fileList.slice(-1)); // Keep only the last file
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) {
-      return setError('Пожалуйста, выберите файл');
+  const handleUpload = async () => {
+    if (fileList.length === 0) {
+      setError('Пожалуйста, выберите файл');
+      return;
     }
 
     setError('');
@@ -36,10 +37,10 @@ const UploadPhotoPage = () => {
 
     try {
       const formData = new FormData();
-      formData.append('photo', file);
+      formData.append('photo', fileList[0].originFileObj);
       const data = await uploadPhoto(formData);
       setMessage(data.message || 'Фотография успешно загружена');
-      setFile(null);
+      setFileList([]);
     } catch (err) {
       setError(err.message || 'Ошибка загрузки фотографии');
     } finally {
@@ -47,37 +48,31 @@ const UploadPhotoPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
-    <div className="upload-container">
-      <header>
-        <h2>Загрузить фотографию</h2>
-        <div className="nav-links">
-          <a href="/gallery">Галерея</a>
-          <a href="/profile">Профиль</a>
-          <button onClick={handleLogout}>Выйти</button>
-        </div>
-      </header>
-      {error && <div className="error-message">{error}</div>}
-      {message && <div className="success-message">{message}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Выберите фотографию</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
-        </div>
-        <button type="submit" disabled={loading || !file}>
-          {loading ? 'Загрузка...' : 'Загрузить'}
-        </button>
-      </form>
-    </div>
+    <Card style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      <Title level={2} style={{ marginBottom: 24 }}>Загрузить фотографию</Title>
+      {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+      {message && <Alert message={message} type="success" showIcon style={{ marginBottom: 16 }} />}
+      <Upload
+        fileList={fileList}
+        onChange={handleFileChange}
+        beforeUpload={() => false} // Prevent auto upload
+        accept="image/*"
+        listType="picture"
+      >
+        <Button icon={<UploadOutlined />} size="large">Выбрать файл</Button>
+      </Upload>
+      <Button
+        type="primary"
+        onClick={handleUpload}
+        loading={loading}
+        disabled={fileList.length === 0}
+        style={{ marginTop: 16 }}
+        size="large"
+      >
+        Загрузить
+      </Button>
+    </Card>
   );
 };
 

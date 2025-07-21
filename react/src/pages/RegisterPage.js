@@ -2,24 +2,23 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../api/authApi';
 import { useAuth } from '../contexts/AuthContext';
-import '../App.css';
+import { Form, Input, Button, Alert, Card, Typography } from 'antd';
+import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 const RegisterPage = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register: authRegister } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onFinish = async (values) => {
     setError('');
     setLoading(true);
 
     try {
-      const data = await register({ username, email, password });
+      const data = await register({ username: values.username, email: values.email, password: values.password });
       authRegister(data.user, data.token);
       navigate('/gallery');
     } catch (err) {
@@ -30,48 +29,58 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="auth-container">
-      <h2>Регистрация</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Имя пользователя</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            placeholder="Введите имя"
-          />
+    <Card style={{ maxWidth: 400, margin: '0 auto', borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      <Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>Регистрация</Title>
+      {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+      <Form
+        name="register"
+        onFinish={onFinish}
+      >
+        <Form.Item
+          name="username"
+          rules={[{ required: true, message: 'Пожалуйста, введите ваше имя!' }]}
+        >
+          <Input prefix={<UserOutlined />} placeholder="Имя пользователя" size="large" />
+        </Form.Item>
+        <Form.Item
+          name="email"
+          rules={[{ required: true, message: 'Пожалуйста, введите ваш email!' }, { type: 'email', message: 'Некорректный email!' }]}
+        >
+          <Input prefix={<MailOutlined />} placeholder="Email" size="large" />
+        </Form.Item>
+        <Form.Item
+          name="password"
+          rules={[{ required: true, message: 'Пожалуйста, введите ваш пароль!' }, { min: 6, message: 'Пароль должен быть не менее 6 символов!' }]}
+        >
+          <Input.Password prefix={<LockOutlined />} placeholder="Пароль" size="large" />
+        </Form.Item>
+        <Form.Item
+          name="confirm"
+          dependencies={['password']}
+          rules={[
+            { required: true, message: 'Пожалуйста, подтвердите ваш пароль!' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('password') === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error('Пароли не совпадают!'));
+              },
+            }),
+          ]}
+        >
+          <Input.Password prefix={<LockOutlined />} placeholder="Подтвердите пароль" size="large" />
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={loading} block size="large">
+            Зарегистрироваться
+          </Button>
+        </Form.Item>
+        <div style={{ textAlign: 'center' }}>
+          <Text><a href="/login">Уже есть аккаунт? Войти</a></Text>
         </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="Введите email"
-          />
-        </div>
-        <div className="form-group">
-          <label>Пароль</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Введите пароль"
-          />
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Регистрация...' : 'Зарегистрироваться'}
-        </button>
-      </form>
-      <div className="auth-links">
-        <a href="/login">Уже есть аккаунт? Войти</a>
-      </div>
-    </div>
+      </Form>
+    </Card>
   );
 };
 
