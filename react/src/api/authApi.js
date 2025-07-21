@@ -13,7 +13,7 @@ export const register = async (data) => {
     const response = await instance.post('/auth/register', data);
     return response.data;
   } catch (error) {
-    throw error.response?.data || { message: 'Registration failed' };
+    throw error.response?.data || { message: 'Ошибка регистрации' };
   }
 };
 
@@ -29,7 +29,7 @@ export const login = async (data) => {
     const response = await instance.post('/auth/login', data);
     return response.data;
   } catch (error) {
-    throw error.response?.data || { message: 'Login failed' };
+    throw error.response?.data || { message: 'Ошибка входа' };
   }
 };
 
@@ -45,6 +45,6 @@ export const resetPassword = async (data) => {
     const response = await instance.post('/auth/reset-password', data);
     return response.data;
   } catch (error) {
-    throw error.response?.data || { message: 'Password reset failed' };
+    throw error.response?.data || { message: 'Ошибка сброса пароля' };
   }
 };
