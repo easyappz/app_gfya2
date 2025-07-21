@@ -10,7 +10,7 @@ import { instance } from './axios';
  */
 export const register = async (data) => {
   try {
-    const response = await instance.post('/auth/register', data);
+    const response = await instance.post('/api/auth/register', data);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Ошибка регистрации' };
@@ -26,7 +26,7 @@ export const register = async (data) => {
  */
 export const login = async (data) => {
   try {
-    const response = await instance.post('/auth/login', data);
+    const response = await instance.post('/api/auth/login', data);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Ошибка входа' };
@@ -42,7 +42,7 @@ export const login = async (data) => {
  */
 export const resetPassword = async (data) => {
   try {
-    const response = await instance.post('/auth/reset-password', data);
+    const response = await instance.post('/api/auth/reset-password', data);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Ошибка сброса пароля' };

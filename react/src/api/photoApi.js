@@ -7,7 +7,7 @@ import { instance } from './axios';
  */
 export const uploadPhoto = async (formData) => {
   try {
-    const response = await instance.post('/photos/upload', formData, {
+    const response = await instance.post('/api/photos/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -24,7 +24,7 @@ export const uploadPhoto = async (formData) => {
  */
 export const getAllPhotos = async () => {
   try {
-    const response = await instance.get('/photos');
+    const response = await instance.get('/api/photos');
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to fetch photos' };
@@ -37,7 +37,7 @@ export const getAllPhotos = async () => {
  */
 export const getUserPhotos = async () => {
   try {
-    const response = await instance.get('/photos/user');
+    const response = await instance.get('/api/photos/user');
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to fetch user photos' };
@@ -52,7 +52,7 @@ export const getUserPhotos = async () => {
  */
 export const ratePhoto = async (photoId, rating) => {
   try {
-    const response = await instance.post(`/photos/${photoId}/rate`, { rating });
+    const response = await instance.post(`/api/photos/${photoId}/rate`, { rating });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to rate photo' };
@@ -66,7 +66,7 @@ export const ratePhoto = async (photoId, rating) => {
  */
 export const filterPhotosByRating = async (minRating) => {
   try {
-    const response = await instance.get(`/photos/filter?minRating=${minRating}`);
+    const response = await instance.get(`/api/photos/filter?minRating=${minRating}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to filter photos' };

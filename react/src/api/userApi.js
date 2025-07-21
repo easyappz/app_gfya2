@@ -6,7 +6,7 @@ import { instance } from './axios';
  */
 export const getUserProfile = async () => {
   try {
-    const response = await instance.get('/user/profile');
+    const response = await instance.get('/api/user/profile');
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to fetch profile' };
@@ -19,7 +19,7 @@ export const getUserProfile = async () => {
  */
 export const getUserStatistics = async () => {
   try {
-    const response = await instance.get('/user/statistics');
+    const response = await instance.get('/api/user/statistics');
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to fetch statistics' };
